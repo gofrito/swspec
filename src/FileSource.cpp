@@ -18,26 +18,22 @@
  * 02110-1301, USA
 **************************************************************************/
 
-#include "FileSource.h"
-#include "Helpers.h"
 #include <string>
 #include <iostream>
 #include <iomanip>
 #include <cmath>
 #include <stdlib.h>
+#include "FileSource.h"
+#include "Helpers.h"
 using std::cerr;
 using std::endl;
-
-extern "C" { 
-    #include <mark5access.h> 
-}
 
 /**
  * Open the file
  * @return int Returns 0 on success
  * @param  uri File path
  */
-int FileSource::open(std::string uri) 
+int FileSource::open(std::string uri)
 {
    /* Determine format: with headers, without headers? */
    std::ostream* log = cfg->tlog;
@@ -63,9 +59,9 @@ int FileSource::open(std::string uri)
       /* Format has headers that overwrite data */
       if (Helpers::cicompare(cfg->sourceformat_str, "MKIV") == Helpers::BeginningsMatch) {
           mk5fileoffset = 0;
-          _mk5s = new_mark5_stream( 
+          _mk5s = new_mark5_stream(
                 new_mark5_stream_file(_uri.c_str(), mk5fileoffset),
-                new_mark5_format_generic_from_string(_format.c_str()) 
+                new_mark5_format_generic_from_string(_format.c_str())
           );
           mark5_stream_print(_mk5s);
           if (!_mk5s) {
@@ -131,7 +127,7 @@ int FileSource::open(std::string uri)
    /* Read the header and possibly update 'frame_payload_length' */
    this->locateFirstHeader();
    ifile.seekg(-frame_header_length, std::ios_base::cur);
-   
+
    /* Skip the first part of data? */
    if (cfg->seconds_to_skip > 0) {
        if (cfg->sourceformat == VLBA || cfg->sourceformat == MKIV || cfg->sourceformat == Mk5B ) {
@@ -148,7 +144,7 @@ int FileSource::open(std::string uri)
                frames    = 0;
                seek_pos += smp_bytes;
            }
-           *log << "Skipping " << cfg->seconds_to_skip << " sample-seconds: " 
+           *log << "Skipping " << cfg->seconds_to_skip << " sample-seconds: "
                 << smp_bytes << " sample bytes correspods to " << frames << " frames, "
                 << "seeking to offset " << seek_pos << std::endl;
            ifile.seekg(seek_pos, std::ios_base::cur);
@@ -171,7 +167,7 @@ int FileSource::open(std::string uri)
  * @return int    Returns the amount of bytes read
  * @param  bspace Pointer to Buffer to fill out
  */
-int FileSource::read(Buffer* buf) 
+int FileSource::read(Buffer* buf)
 {
    int nread;
    std::ostream* log = cfg->tlog;
@@ -222,7 +218,7 @@ int FileSource::read(Buffer* buf)
    if (!sourceformat_uses_frames) {
 
        if (false && (cfg->sourceformat == VLBA || cfg->sourceformat == MKIV)) {
-           /* Removed for the time being! mark5_stream_copy is buggy... 
+           /* Removed for the time being! mark5_stream_copy is buggy...
             * We use normal ifile.read() instead. See reopen_mark5_stream() for ifile.seekg().
             */
            int res = mark5_stream_copy(_mk5s, buf->getAllocated(), buf->getData());
@@ -309,7 +305,7 @@ void FileSource::locateFirstHeader()
            cfg->logIO->stream() << "// VLBA/MkIV start time <MJD sec ns>" << std::endl;
            cfg->logIO->stream() << std::fixed << mjd << " " << sec << " " << ns << std::endl;
 
-      /* Truly raw data or we just don't care about headers */          
+      /* Truly raw data or we just don't care about headers */
       } else {
           cfg->logIO->stream() << "// No timestamps extracted from input data" << std::endl;
           first_header_offset = 0;

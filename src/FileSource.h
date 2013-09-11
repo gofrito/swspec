@@ -27,8 +27,10 @@
 #include <iostream>
 #include <fstream>
 
-extern "C" { 
-    #include <mark5access.h> 
+extern "C" {
+    #undef __cplusplus
+    #include <mark5access.h>
+    #define __cplusplus
 }
 
 class FileSource : public DataSource
