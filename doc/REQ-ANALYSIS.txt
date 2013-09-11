@@ -1,0 +1,70 @@
+
+v1.00 Requirements Analysis
+-----------------------------------
+
+  - preferences: computation on Cell, data on Intel, better than 2 bit
+  
+  - integrating real-to-complex FFT with windowing function and overlap 
+       - overlap: how much? fixed at 25%? adjustable?
+
+  - two polarizations as independent data sets (hmm why not merge 2xReal to complex...)
+   
+  - initial goal is 16 MHz analog bandwidth per channel, 8-bit samples
+    => 32 Ms/s or 256 Mbit/s   
+
+  - can use 2-bit test data initially when readily vailable DAS's can't do 
+    any better (currently looks like it... can do tests with Matlab-generated 8-bit dummy data of course..)
+
+  - the data source and the data format is not 100% clear... 
+       - initially just use files from NFS
+       - VSIB support desired for Kronian data working ASAP
+       - add true cluster or fake cluster UDP network connectivity
+       - JIVE has some VSIB's so this would be one good Metsähovi-supported way getting VSI/ADC data into Intel
+       - JIVE Mark5's w/ StreamStor could use 'in2file' style of code to get data from VSI/ADC/Mk4fmt
+
+  - data output format is ASCII, contains power spectrum, just a column of numbers in e.g. full precision ~17 digit
+
+  - first make stand-alone program with file inputs
+
+  - later assume FieldSystem somehow calls 'swspectrometer' when antenna data is valid 
+    or available somewhere
+
+  - FieldSystem controls the observation, several phases
+       - when on-target  accumulate spectrum into file ON_xxxx
+       - when off-target accumulate spectrum into file OFF_xxxx
+       - when cal-target accumulate spectrum into file CAL_xxxx
+       - xxxx is sequential number of nodding cycle (counter...)
+
+  - initially a astro spectrometer implementation only, but later S/X S/C kept in mind for v1.01
+
+  - keep in mind 4 channels for S/X S/C tracking
+
+  - astro spectrometer needs no more than 4-8K FFT channels, for S/C 64-128K FFT channels more suitable
+
+      - one Cell SPE can't fit 64K*8byte=512KB of data !!
+        -- TODO check IBM SDK 3.0 for new FFT funcs, 
+           or use my FFTW Cell patch
+              http://www.metsahovi.fi/~jwagner/Cell/fftw-patch/ps3-001.kurp.hut.fi.1d.scxx.p2.gif
+           and expect 8-12 GFLOPs (check if FFTW has been finally updated to allow the
+           user to limit the number of SPEs the FFTW reserves for itself... otherwise can't use FFTW...)
+          
+  - astro spectrometer expected 80s integration time with single pass over the data
+
+
+v1.01 Requirement Analysis
+-----------------------------------
+
+  - S/X S/C implementation
+ 
+  - Hilbert transform - how accurate do you want it?
+    Several FFT passes, per Sergei ~10 FFTs for 50-60 dB accuracy
+     - "50 dB accurate Hilbert transform can be made as a set of properly windowed and overlapped FFT&IFFTs"
+     - "with more aggressive push goes to 180 dB, double"
+     - need to invent some smarter than before way to do an Hilbert xform :-)
+  - PCA or SVD instead of Hilbert was one idea, better on efficient 'double' accuracy platforms
+
+  - S/C tracking expected 1000s integration time with multiple passes over the data 
+     - desired 1 uHz resolution in a ~100 Hz band window around one or more detected carriers that have been PLL-locked
+     - Sergei says 10 minutes of data would have to be buffered
+     - home many passes? could just run them in parallel on many PS3s or time interleaved on one PS3?
+

@@ -1,0 +1,89 @@
+Let's assume you have two BBC outputs connected to
+two 8-bit ADs, and these ADs can somehow send a data
+to a computer. 
+And it can do segmenting (with an overlap), windowing
+and FFT, squaring and accumulation. Then it can send
+the accumulated spectrum to a storage media.
+
+Let's hope that data transfer from AD to computer can
+cope with 2 of 8 MHz bands, 16 MHz sampling at 8 bit,
+totaling a moderate 256 Mbps aggregated data rate.
+For normal astronomy it's enough.
+
+For S/C tracking it'll be good to have 4 bands (optionally)
+- both pols at S and X. Also, for S/C tracking integration
+of power spectra should be as short as 1 s, many spectra for
+a single ON-pointing, could be no OFF-pointings if only
+Doppler tracking is done. And input data should be saved 
+somewhere untill a worth of several minutes of power spectra
+is accumulated. Then these power spectra will be used to
+determine a first approximation of Doppler and re-analize
+the input data to get better Doppler resolution. 
+But that's later..
+
+Then, how it all will work (for a classic spectrometer)
+in time domain:
+
+0. Field System reads a schedule.
+
+1. It coomands the antenna to go on-source. 
+When the target coordinates are reached, computer starts 
+(on the next PPS) to integrate the spectrum
+(for a typical time 80 s). Integrated spectum is then sent 
+to the storage. Start UTC of the integration is logged.
+
+2. Then FS commands the antenna fo go off-source. When the
+off source position is reached, off-source spectrum integration
+starts. Integrated spectrum is sent to the storage.
+
+3. Then FS keeps the antenna at off-source coordinates and 
+switches the noise diod on. Integration of cal-spectrum starts
+and lasts for a specified time. Save the integrated spectrum.
+
+Repeat the cycle untill the schedule ends.
+
+When the schedule ends, either stay idle, 
+or start another schedule, if it's avalable.
+
+
+Spectra are stored in a directory called ProjID.YYYDOYhhmmss
+where YYYYDOYhhmmss reflects the start time (can be either UTC or
+wall clock time, UTC is preferable, wall clock time is easier, 
+and then the time stamp can be YYYYMMDDhhmmss for wall clock time).
+
+Spectra files (one per spectrum) are called ON_P_seqnum, 
+OFF_P_seqnum, CAL_P_secnum. P stays for polarization ID, single digit.
+3 ror LCP and 7 for RCP are allowed, though 1 for RCP and 2 for LCP
+could do a job either. If it's a dual frequency S/X obs, 
+add another field for frequency ID.
+ASCII is preferable, binary is also allowed.
+
+Log file with a name containing the same time stamp as the directory
+can be formatted in several columns as follows:
+
+column 1 : cycle seq number
+column 2 : spec ID ( 1 for ON, 2 for OFF and 3 for CAL)
+column 3 to 7 : integration start UTC in YYYY DOY hh mm ss
+           separated by empty spaces
+
+optionally it could be agmented with more columns for:
+ antenna Az El (decimal degs)
+ antenna RA and Dec (apparent, or, preferably, J2000)
+ air temperature (C or K)
+ relative humidity (%)
+
+Log file has a preambula contaning numerous lines describing 
+what the obs project was for.
+Essential fields in the preambula :
+Receiver K or S/X ,
+LO settings, all LOs,
+Noise diod deltaT.
+Each line in the preambula starts with // (two slashes and space)
+
+
+
+
+
+
+
+
