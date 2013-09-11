@@ -1,0 +1,130 @@
+-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+
+Playstation3 with old 90nm Cell
+using IBM Cell SDK 2.1
+
+$ uname -a
+Linux ps3-001 2.6.23-20071023 #7 SMP Fri Nov 30 10:40:17 EET 2007 ppc64 GNU/Linux
+
+$ cat /etc/debian_version
+lenny/sid
+
+$ cat /proc/cpuinfo
+processor       : 0
+cpu             : Cell Broadband Engine, altivec supported
+clock           : 3192.000000MHz
+revision        : 5.1 (pvr 0070 0501)
+
+processor       : 1
+cpu             : Cell Broadband Engine, altivec supported
+clock           : 3192.000000MHz
+revision        : 5.1 (pvr 0070 0501)
+
+timebase        : 79800000
+platform        : PS3
+
+
+Test data:
+
+$ ll Data1.NoSpin_rep.byte
+-rw-r--r-- 1 oper oper 256M Feb 22 09:55 Data1.NoSpin_rep.byte
+
+  - 256MB of 8-bit samples
+  - FFTs with 50% overlap
+    => ~512MB or 512MSamples to process
+  - 1024-point FFTs from the set: 512MS/1k = 512k FFTs
+  - 8192 FFTs integrated: 512k/8k = 64 spectra
+
+
+#### CVS code tag for performance stats below: 'perf_tag4' ####
+
+     ---------- BASIC TESTS ----------
+
+Cell 1024-pt FFT
+
+  $ ./swspectrometer --cores=1 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+  Running with 1 cores, 1024 FFT points, 8192-fold FFT integration and 4096.5kB per-core single buffers.
+  Input data has 8 bits/sample, single channel data.
+  One spectrum needs 1 N-core iterations.
+
+  Allocating raw buffers, 8 MB total...
+  Allocating result buffers...
+  TaskDispatcher buffer prefill...
+  TaskDispatcher core init... 0
+  TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62
+  SPE of rank 0 completed, total time 7.02229s,  total FFTs 516096, total spectra 63
+  TaskDispatcher completed, time delta 11.8322s.
+
+  2 cores (4096.5kB x chunks 0..30)
+  SPE of rank 0 completed, total time 3.45546s,  total FFTs 253952, total spectra 31
+  SPE of rank 1 completed, total time 3.45552s,  total FFTs 253952, total spectra 31
+  TaskDispatcher completed, time delta 11.38s.
+
+  3 cores (4096.5kB x chunks 0..20)
+  SPE of rank 0 completed, total time 2.34117s,  total FFTs 172032, total spectra 21
+  SPE of rank 1 completed, total time 2.34116s,  total FFTs 172032, total spectra 21
+  SPE of rank 2 completed, total time 2.34114s,  total FFTs 172032, total spectra 21
+  TaskDispatcher completed, time delta 11.4981s.
+
+  4 cores (4096.5kB x chunks 0..14)
+  SPE of rank 0 completed, total time 1.67209s,  total FFTs 122880, total spectra 15
+  SPE of rank 1 completed, total time 1.67213s,  total FFTs 122880, total spectra 15
+  SPE of rank 2 completed, total time 1.67217s,  total FFTs 122880, total spectra 15
+  SPE of rank 3 completed, total time 1.67221s,  total FFTs 122880, total spectra 15
+  TaskDispatcher completed, time delta 11.2364s.
+
+  6 cores (4096.5kB x chunks 0..9)
+  SPE of rank 0 completed, total time 1.11504s,  total FFTs 81920, total spectra 10
+  SPE of rank 1 completed, total time 1.11503s,  total FFTs 81920, total spectra 10
+  SPE of rank 2 completed, total time 1.11494s,  total FFTs 81920, total spectra 10
+  SPE of rank 3 completed, total time 1.11486s,  total FFTs 81920, total spectra 10
+  SPE of rank 4 completed, total time 1.11485s,  total FFTs 81920, total spectra 10
+  SPE of rank 5 completed, total time 1.11498s,  total FFTs 81920, total spectra 10
+  TaskDispatcher completed, time delta 10.8447s.
+
+TabletPC 1024-pt FFT
+
+  $ ./swspectrometer --cores=1 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+  1 core (4096.5kB x chunks 0..62)
+  IPP core 0 completed: 8.83806s total internal calculation time, 516096 FFTs
+  TaskDispatcher completed, time delta 9.33293s.
+
+
+#### CVS code tag for performance stats below: 'perf_tag5' ####
+
+     ---------- FFT-PTS TESTS ----------
+
+Cell
+
+  $ ./swspectrometer --cores=6 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+ 
+  1024-pt
+  SPE of rank 0 completed, total time 1.11669s,  total FFTs 81920, total spectra 10
+  SPE of rank 1 completed, total time 1.11672s,  total FFTs 81920, total spectra 10
+  SPE of rank 2 completed, total time 1.11665s,  total FFTs 81920, total spectra 10
+  SPE of rank 3 completed, total time 1.11657s,  total FFTs 81920, total spectra 10
+  SPE of rank 4 completed, total time 1.11649s,  total FFTs 81920, total spectra 10
+  SPE of rank 5 completed, total time 1.11655s,  total FFTs 81920, total spectra 10
+  TaskDispatcher completed, time delta 10.9418s.
+
+  2048
+  SPE of rank 0 completed, total time 1.20902s,  total FFTs 42903, total spectra 5
+  SPE of rank 1 completed, total time 1.20890s,  total FFTs 42903, total spectra 5
+  SPE of rank 2 completed, total time 1.20878s,  total FFTs 42903, total spectra 5
+  SPE of rank 3 completed, total time 1.20879s,  total FFTs 42903, total spectra 5
+  SPE of rank 4 completed, total time 1.20881s,  total FFTs 42903, total spectra 5
+  SPE of rank 5 completed, total time 1.20897s,  total FFTs 42903, total spectra 5
+  TaskDispatcher completed, time delta 11.8794s.
+
+  4096
+  SPE of rank 0 completed, total time 1.23171s,  total FFTs 21111, total spectra 2
+  SPE of rank 1 completed, total time 1.23049s,  total FFTs 21111, total spectra 2
+  SPE of rank 2 completed, total time 1.23068s,  total FFTs 21111, total spectra 2
+  SPE of rank 3 completed, total time 1.23148s,  total FFTs 21111, total spectra 2
+  SPE of rank 4 completed, total time 1.23104s,  total FFTs 21111, total spectra 2
+  SPE of rank 5 completed, total time 1.23084s,  total FFTs 21111, total spectra 2
+  TaskDispatcher completed, time delta 11.4886s.
+

@@ -1,0 +1,59 @@
+Summary: Library for decoding VLBI baseband formats: Mark4, VLBA and Mark5B
+Name: mark5access
+Version: @version@
+Release: 2
+License: GPL3
+Group: VLBI
+BuildRoot: /var/tmp/mark5access-@version@-buildroot
+Requires: gcc >= 4.1.0
+Requires: fftw3 >= 3.2.0
+Prefix: /usr
+Source: mark5access-@version@.tar.gz
+
+%description
+Baseband data decoder
+
+%prep
+%setup -q -n mark5access-@version@
+
+%build
+%configure
+make
+
+%install
+%makeinstall
+
+%files
+%defattr(-,root,root)
+%{_libdir}/libmark5access.la
+%{_libdir}/libmark5access.so.0.0.0
+%{_libdir}/libmark5access.so.0
+%{_libdir}/libmark5access.so
+%{_libdir}/libmark5access.a
+%{_libdir}/pkgconfig/mark5access.pc
+%{_bindir}/bbsum
+%{_bindir}/directory2filelist
+%{_bindir}/m5bstate
+%{_bindir}/m5d
+%{_bindir}/m5findformats
+%{_bindir}/m5fold
+%{_bindir}/m5pcal
+%{_bindir}/m5spec
+%{_bindir}/m5test
+%{_bindir}/m5time
+%{_bindir}/m5tsys
+%{_bindir}/m5slice
+%{_bindir}/m5timeseries
+%{_bindir}/test5b
+%{_bindir}/test_mark5_stream
+%{_bindir}/test_unpacker
+%{_bindir}/zerocorr
+%{_includedir}/mark5access.h
+%{_includedir}/mark5access/mark5_stream.h
+
+%changelog
+* Tue Jul 19 2011 Walter Brisken <wbrisken@nrao.edu>
+- Add some new utilities
+
+* Fri Mar 11 2011 Walter Brisken <wbrisken@nrao.edu>
+- First rpm version

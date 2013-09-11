@@ -1,0 +1,748 @@
+-------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------
+
+Asus L1N64-SLI WS, nForce 680a chipset, 4GB RAM
+Two AMD 2212 processors
+
+$ cat /etc/debian_version
+lenny/sid
+
+$ uname -a
+Linux abidal 2.6.23-1-amd64 #1 SMP Wed Oct 31 01:32:58 UTC 2007 x86_64 GNU/Linux
+
+$ cat /proc/cpuinfo
+processor       : 0
+vendor_id       : AuthenticAMD
+cpu family      : 15
+model           : 65
+model name      : Dual-Core AMD Opteron(tm) Processor 2212
+stepping        : 2
+cpu MHz         : 2009.259
+cache size      : 1024 KB
+physical id     : 0
+siblings        : 2
+core id         : 0
+cpu cores       : 2
+fpu             : yes
+fpu_exception   : yes
+cpuid level     : 1
+wp              : yes
+flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush mmx fxsr sse sse2 ht syscall nx mmxext fxsr_opt rdtscp lm 3dnowext 3dnow 
+rep_good pni cx16 lahf_lm cmp_legacy svm extapic cr8_legacy
+bogomips        : 4021.69
+TLB size        : 1024 4K pages
+clflush size    : 64
+cache_alignment : 64
+address sizes   : 40 bits physical, 48 bits virtual
+power management: ts fid vid ttp tm stc
+
+Test data:
+
+$ ll Data1.NoSpin_rep.byte
+-rw-r--r-- 1 oper oper 256M Feb 22 09:55 Data1.NoSpin_rep.byte
+
+
+#### CVS code tag for performance stats below: 'perf_tag1' ####
+
+
+     ---------- NUM CORES EFFECT ----------
+
+
+>>> $ ./swspectrometer --cores=1 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 1 cores, 1024 FFT points, 8192-fold FFT integration and 4096.5kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 8 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 37 38 39 40 41 42 43 44 
+45 46 47 48 49 50 51 52 53 54 55 56 57 58 59 60 61 62
+MKL core 0 completed: 16.8001s total internal calculation time
+TaskDispatcher completed, time delta 17.0442s.
+
+$ ls -l results-data1.txt
+-rw-r--r-- 1 oper oper 641255 Feb 22 15:22 results-data1.txt
+
+
+>>> $ ./swspectrometer --cores=2 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 1024 FFT points, 8192-fold FFT integration and 4096.5kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 16 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+MKL core 0 completed: 8.27677s total internal calculation time
+MKL core 1 completed: 8.72323s total internal calculation time
+TaskDispatcher completed, time delta 9.10396s.
+
+$ ls -l results-data1.txt
+-rw-r--r-- 1 oper oper 631062 Feb 22 15:26 results-data1.txt
+
+
+>>> $ ./swspectrometer --cores=3 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 1024 FFT points, 8192-fold FFT integration and 4096.5kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 24 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20
+MKL core 0 completed: 5.85357s total internal calculation time
+MKL core 1 completed: 5.92105s total internal calculation time
+MKL core 2 completed: 5.79819s total internal calculation time
+TaskDispatcher completed, time delta 6.50654s.
+
+$ ls -l results-data1.txt
+-rw-r--r-- 1 oper oper 641255 Feb 22 15:27 results-data1.txt
+
+
+>>> $ ./swspectrometer --cores=4 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+(4th core had some other 60% CPU task running on it)
+
+Running with 4 cores, 1024 FFT points, 8192-fold FFT integration and 4096.5kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 32 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2 3
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+MKL core 0 completed: 5.00723s total internal calculation time
+MKL core 1 completed: 5.63276s total internal calculation time
+MKL core 2 completed: 4.92586s total internal calculation time
+MKL core 3 completed: 4.44626s total internal calculation time
+TaskDispatcher completed, time delta 6.32324s.
+
+
+
+     ---------- FFT POINTS EFFECT, 3-CORE ----------
+
+
+>>> $ ./swspectrometer --cores=3 --fftpts=4096 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 4096 FFT points, 8192-fold FFT integration and 16386kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 96 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2 3 4
+MKL core 0 completed: 5.99042s total internal calculation time, 40960 FFTs
+MKL core 1 completed: 5.94645s total internal calculation time, 40960 FFTs
+MKL core 2 completed: 5.79904s total internal calculation time, 40960 FFTs
+TaskDispatcher completed, time delta 6.36767s.
+
+>>> $ ./swspectrometer --cores=3 --fftpts=8192 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 8192 FFT points, 8192-fold FFT integration and 5462kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 2 N-core iterations.
+
+Allocating raw buffers, 32 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+MKL core 0 completed: 6.1299s total internal calculation time, 20460 FFTs
+MKL core 1 completed: 5.93466s total internal calculation time, 20460 FFTs
+MKL core 2 completed: 5.9926s total internal calculation time, 20460 FFTs
+TaskDispatcher completed, time delta 6.46822s.
+
+>>> $ ./swspectrometer --cores=3 --fftpts=16384 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 16384 FFT points, 8192-fold FFT integration and 10924kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 2 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 6.08909s total internal calculation time, 9548 FFTs
+MKL core 1 completed: 6.00888s total internal calculation time, 9548 FFTs
+MKL core 2 completed: 5.97286s total internal calculation time, 9548 FFTs
+TaskDispatcher completed, time delta 6.36715s.
+
+>>> $ ./swspectrometer --cores=3 --fftpts=32768 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 32768 FFT points, 8192-fold FFT integration and 21848kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 2 N-core iterations.
+
+Allocating raw buffers, 128 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2
+MKL core 0 completed: 5.50767s total internal calculation time, 4092 FFTs
+MKL core 1 completed: 5.72251s total internal calculation time, 4092 FFTs
+MKL core 2 completed: 5.91186s total internal calculation time, 4092 FFTs
+TaskDispatcher completed, time delta 5.91256s.
+
+>>> $ ./swspectrometer --cores=3 --fftpts=65536 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 65536 FFT points, 8192-fold FFT integration and 7282.67kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 4 N-core iterations.
+
+Allocating raw buffers, 42 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10
+MKL core 0 completed: 7.49498s total internal calculation time, 2486 FFTs
+MKL core 1 completed: 7.60116s total internal calculation time, 2486 FFTs
+MKL core 2 completed: 7.57555s total internal calculation time, 2486 FFTs
+TaskDispatcher completed, time delta 7.89208s.
+
+>>> $ ./swspectrometer --cores=3 --fftpts=131072 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 131072 FFT points, 8192-fold FFT integration and 14565.3kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 4 N-core iterations.
+
+Allocating raw buffers, 85 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1 2 3 4
+MKL core 0 completed: 8.13709s total internal calculation time, 1130 FFTs
+MKL core 1 completed: 8.04014s total internal calculation time, 1130 FFTs
+MKL core 2 completed: 8.16715s total internal calculation time, 1130 FFTs
+TaskDispatcher completed, time delta 8.3525s.
+
+>>> $ ./swspectrometer --cores=3 --fftpts=262144 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 3 cores, 262144 FFT points, 8192-fold FFT integration and 29130.7kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 4 N-core iterations.
+
+Allocating raw buffers, 170 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1 2
+TaskDispatcher processing all input chunks... 0 1
+MKL core 0 completed: 8.04095s total internal calculation time, 452 FFTs
+MKL core 1 completed: 8.0239s total internal calculation time, 452 FFTs
+MKL core 2 completed: 7.64493s total internal calculation time, 452 FFTs
+TaskDispatcher completed, time delta 8.22488s.
+
+
+
+     ---------- FFT POINTS EFFECT, 2-CORE ----------
+
+
+>>> $ ./swspectrometer --cores=2 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 1024 FFT points, 8192-fold FFT integration and 4096.5kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 16 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30
+MKL core 0 completed: 8.31141s total internal calculation time, 253952 FFTs
+MKL core 1 completed: 8.74684s total internal calculation time, 253952 FFTs
+TaskDispatcher completed, time delta 8.88565s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=2048 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 2048 FFT points, 8192-fold FFT integration and 8193kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 32 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+MKL core 0 completed: 8.1309s total internal calculation time, 122880 FFTs
+MKL core 1 completed: 7.97206s total internal calculation time, 122880 FFTs
+TaskDispatcher completed, time delta 8.25116s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=4096 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 4096 FFT points, 8192-fold FFT integration and 16386kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 7.89643s total internal calculation time, 57344 FFTs
+MKL core 1 completed: 7.87236s total internal calculation time, 57344 FFTs
+TaskDispatcher completed, time delta 8.05003s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=8192 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 8192 FFT points, 8192-fold FFT integration and 8193kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 2 N-core iterations.
+
+Allocating raw buffers, 32 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+MKL core 0 completed: 8.82459s total internal calculation time, 14329 FFTs
+MKL core 1 completed: 8.87638s total internal calculation time, 14329 FFTs
+TaskDispatcher completed, time delta 8.91201s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=16384 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 16384 FFT points, 8192-fold FFT integration and 16386kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 2 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 8.82459s total internal calculation time, 14329 FFTs
+MKL core 1 completed: 8.87638s total internal calculation time, 14329 FFTs
+TaskDispatcher completed, time delta 8.91201s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=32768 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 32768 FFT points, 8192-fold FFT integration and 8193kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 4 N-core iterations.
+
+Allocating raw buffers, 32 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+MKL core 0 completed: 10.2722s total internal calculation time, 7665 FFTs
+MKL core 1 completed: 10.5705s total internal calculation time, 7665 FFTs
+TaskDispatcher completed, time delta 10.6029s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=65536 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 65536 FFT points, 8192-fold FFT integration and 16386kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 4 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 10.4104s total internal calculation time, 3577 FFTs
+MKL core 1 completed: 10.5061s total internal calculation time, 3577 FFTs
+TaskDispatcher completed, time delta 10.5064s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=131072 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 131072 FFT points, 8192-fold FFT integration and 8193kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 8 N-core iterations.
+
+Allocating raw buffers, 32 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6 7 8 9 10 11 12 13 14
+MKL core 0 completed: 13.5294s total internal calculation time, 1905 FFTs
+MKL core 1 completed: 13.5075s total internal calculation time, 1905 FFTs
+TaskDispatcher completed, time delta 13.5374s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=262144 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 262144 FFT points, 8192-fold FFT integration and 16386kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 8 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 14.6421s total internal calculation time, 889 FFTs
+MKL core 1 completed: 14.5487s total internal calculation time, 889 FFTs
+TaskDispatcher completed, time delta 14.6425s.
+
+
+
+
+     ---------- 'FFT POINTS * FFT INTEGRATION == CONST' EFFECT, 2-CORE ----------
+
+>>> $ ./swspectrometer --cores=2 --fftpts=32768 --fftint=1024 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 32768 FFT points, 1024-fold FFT integration and 16400kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 9.59566s total internal calculation time, 7168 FFTs
+MKL core 1 completed: 9.62487s total internal calculation time, 7168 FFTs
+TaskDispatcher completed, time delta 10.4538s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=65536 --fftint=512 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 65536 FFT points, 512-fold FFT integration and 16416kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 10.5048s total internal calculation time, 3584 FFTs
+MKL core 1 completed: 10.5028s total internal calculation time, 3584 FFTs
+TaskDispatcher completed, time delta 12.3127s.
+
+>>> $ ./swspectrometer --cores=2 --fftpts=131072 --fftint=256 Data1.NoSpin_rep.byte results-data1.txt
+
+Running with 2 cores, 131072 FFT points, 256-fold FFT integration and 16448kB per-core single buffers.
+Input data has 8 bits/sample, single channel data.
+One spectrum needs 1 N-core iterations.
+
+Allocating raw buffers, 64 MB total...
+Allocating result buffers...
+TaskDispatcher buffer prefill...
+TaskDispatcher core init... 0 1
+TaskDispatcher processing all input chunks... 0 1 2 3 4 5 6
+MKL core 0 completed: 12.4447s total internal calculation time, 1792 FFTs
+MKL core 1 completed: 12.4262s total internal calculation time, 1792 FFTs
+TaskDispatcher completed, time delta 16.1445s.
+
+
+#### CVS code tag for performance stats below: 'perf_tag2' ####
+
+Abidal
+
+    TaskCoreIPP.cpp : ippStaticInit() replaced with ippStaticInitCpu(cputype)
+
+    ./swspectrometer --cores=1 --fftpts=32768 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+   
+    ippCpuEM64T : 12.616s,    0.545s fft
+    ippCpuP4HT2 : 12.127s,    0.532s fft
+    ippCpuCentrino : 12.679s, 0.550s fft
+    ippCpuITP : 13.199s, --
+    ippCpuPMX : 12.246s,      0.540s
+    ippCpuX8664 : 12.246s, --
+    ippCpuP4HT: 12.4536s, --
+
+    /opt/intel/ipp/5.3.1.062/em64t/include/ippdefs.h lists all the ippCpuXXX types
+
+
+    back to default cpu, 1k FFT:
+
+    ./swspectrometer --cores=2 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+    IPP core 0 completed: 3.37656s total internal calculation time, 253952 FFTs
+    IPP core 1 completed: 3.37264s total internal calculation time, 253952 FFTs
+    TaskDispatcher completed, time delta 4.06565s.
+        
+
+Tablet PC (old Pentium M 1.6 GHz, OpenSUSE 10.3)
+
+   ./swspectrometer --cores=1 --fftpts=32768 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+   autodetected cpu "Pentium Centrino"
+   ippCpuCentrino : 12.360s,   0.518s fft
+
+   $ uname -a
+   Linux tablet 2.6.22.5-23-default #1 SMP 2007/09/18 05:23:45 UTC i686 i686 i386 GNU/Linux
+
+   $ cat /proc/cpuinfo
+   vendor_id       : GenuineIntel
+   cpu family      : 6
+   model           : 13
+   model name      : Intel(R) Pentium(R) M processor 1.60GHz
+   stepping        : 6
+   cpu MHz         : 600.000
+   cache size      : 2048 KB
+   fdiv_bug        : no
+   hlt_bug         : no
+   f00f_bug        : no
+   coma_bug        : no
+   fpu             : yes
+   fpu_exception   : yes
+   cpuid level     : 2
+   wp              : yes
+   flags           : fpu vme de pse tsc msr mce cx8 sep mtrr pge mca cmov pat clflush dts acpi mmx fxsr sse sse2 ss tm pbe up est tm2
+   bogomips        : 1200.87
+   clflush size    : 64
+
+   ./swspectrometer --cores=1 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+   IPP core 0 completed: 8.86744s total internal calculation time, 516096 FFTs
+   TaskDispatcher completed, time delta 9.3639s.
+
+Juliano
+ 
+   $ uname -a
+   Linux juliano 2.6.20gofrito #1 SMP Mon Feb 26 13:31:41 UTC 2007 i686 GNU/Linux
+
+   $ cat /proc/cpuinfo
+   processor       : 0 [and 1]
+   vendor_id       : GenuineIntel
+   cpu family      : 15
+   model           : 6
+   model name      : Intel(R) Pentium(R) D CPU 3.20GHz
+   stepping        : 4
+   cpu MHz         : 3211.628
+   cache size      : 2048 KB
+   physical id     : 0
+   siblings        : 2
+   core id         : 1
+   cpu cores       : 2
+   fdiv_bug        : no
+   hlt_bug         : no
+   f00f_bug        : no
+   coma_bug        : no
+   fpu             : yes
+   fpu_exception   : yes
+   cpuid level     : 6
+   wp              : yes
+   flags           : fpu vme de pse tsc msr pae mce cx8 apic sep mtrr pge mca cmov pat pse36 clflush dts acpi mmx fxsr sse sse2 ss ht tm pbe lm constant_tsc pni monitor ds_cpl vmx est cid cx16 xtpr lahf_lm
+   bogomips        : 6423.25
+   clflush size    : 64
+
+   autodetected cpu
+   ippCpuEM64T    : 5.85162s,   0.209s fft
+
+   custom cpu
+   ippCpuSSE2     : 5.81166s,   0.208139s fft
+   ippCpuCoreSolo : 5.82994s,   0.20831s fft
+   ... no real differences
+
+   ./swspectrometer --cores=1 --fftpts=32768 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+   IPP core 0 completed: 5.8432s total internal calculation time, 15345 FFTs
+   TaskDispatcher completed, time delta 5.89707s.
+
+   ./swspectrometer --cores=2 --fftpts=32768 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+   IPP core 0 completed: 2.97248s total internal calculation time, 7665 FFTs
+   IPP core 1 completed: 2.95222s total internal calculation time, 7665 FFTs
+   TaskDispatcher completed, time delta 3.15484s.
+
+   ./swspectrometer --cores=2 --fftpts=1024 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+   IPP core 0 completed: 2.35117s total internal calculation time, 253952 FFTs
+   IPP core 1 completed: 2.41366s total internal calculation time, 253952 FFTs
+   TaskDispatcher completed, time delta 2.6637s.
+
+
+#### CVS code tag for performance stats below: 'perf_tag2' -- make test_fftpts ####
+
+Juliano
+
+  $ make test_fftpts
+
+  ./swspectrometer --cores=2 --fftpts=4096 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+  4096
+  IPP core 0 completed: 2.43148s total internal calculation time, 57344 FFTs
+  IPP core 1 completed: 2.46727s total internal calculation time, 57344 FFTs
+  TaskDispatcher completed, time delta 2.68606s.
+
+  8192
+  IPP core 0 completed: 2.72706s total internal calculation time, 30705 FFTs
+  IPP core 1 completed: 2.72512s total internal calculation time, 30705 FFTs
+  TaskDispatcher completed, time delta 2.98838s.
+
+  16384
+  IPP core 0 completed: 2.69923s total internal calculation time, 14329 FFTs
+  IPP core 1 completed: 2.71657s total internal calculation time, 14329 FFTs
+  TaskDispatcher completed, time delta 2.91416s.
+
+  32768
+  IPP core 0 completed: 2.9734s total internal calculation time, 7665 FFTs
+  IPP core 1 completed: 2.95577s total internal calculation time, 7665 FFTs
+  TaskDispatcher completed, time delta 3.15689s.
+
+  65536
+  IPP core 0 completed: 3.95202s total internal calculation time, 3577 FFTs
+  IPP core 1 completed: 3.93749s total internal calculation time, 3577 FFTs
+  TaskDispatcher completed, time delta 4.15129s.
+
+  131072
+  IPP core 0 completed: 5.29445s total internal calculation time, 1905 FFTs
+  IPP core 1 completed: 5.23499s total internal calculation time, 1905 FFTs
+  TaskDispatcher completed, time delta 5.53444s.
+
+  262144
+  IPP core 0 completed: 7.83129s total internal calculation time, 889 FFTs
+  IPP core 1 completed: 7.51194s total internal calculation time, 889 FFTs
+  TaskDispatcher completed, time delta 7.83717s.
+
+Abidal
+
+  $ make test_fftpts
+
+  ./swspectrometer --cores=2 --fftpts=4096 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+  4096
+  IPP core 0 completed: 3.53587s total internal calculation time, 57344 FFTs
+  IPP core 1 completed: 3.47457s total internal calculation time, 57344 FFTs
+  TaskDispatcher completed, time delta 3.86659s.
+
+  8192
+  IPP core 0 completed: 4.02262s total internal calculation time, 30705 FFTs
+  IPP core 1 completed: 4.03055s total internal calculation time, 30705 FFTs
+  TaskDispatcher completed, time delta 4.15553s.
+
+  16384
+  IPP core 0 completed: 4.44781s total internal calculation time, 14329 FFTs
+  IPP core 1 completed: 4.41671s total internal calculation time, 14329 FFTs
+  TaskDispatcher completed, time delta 4.5432s.
+
+  32768
+  IPP core 0 completed: 5.91579s total internal calculation time, 7665 FFTs
+  IPP core 1 completed: 5.9649s total internal calculation time, 7665 FFTs
+  TaskDispatcher completed, time delta 6.05303s.
+
+  65536
+  IPP core 0 completed: 7.02129s total internal calculation time, 3577 FFTs
+  IPP core 1 completed: 7.07613s total internal calculation time, 3577 FFTs
+  TaskDispatcher completed, time delta 7.08595s.
+
+  131072
+  IPP core 0 completed: 10.9445s total internal calculation time, 1905 FFTs
+  IPP core 1 completed: 10.9669s total internal calculation time, 1905 FFTs
+  TaskDispatcher completed, time delta 11.0498s.
+
+  262144
+  IPP core 0 completed: 12.9971s total internal calculation time, 889 FFTs
+  IPP core 1 completed: 12.8575s total internal calculation time, 889 FFTs
+  TaskDispatcher completed, time delta 13.0683s.
+
+  ./swspectrometer --cores=1 --fftpts=4096 --fftint=8192 Data1.NoSpin_rep.byte results-data1.txt
+
+  4096
+  IPP core 0 completed: 7.30293s total internal calculation time, 122880 FFTs
+  TaskDispatcher completed, time delta 7.43343s.
+
+  8192
+  IPP core 0 completed: 8.00319s total internal calculation time, 61425 FFTs
+  TaskDispatcher completed, time delta 8.10347s.
+
+  16384
+  IPP core 0 completed: 9.44153s total internal calculation time, 30705 FFTs
+  TaskDispatcher completed, time delta 9.52011s.
+  
+  32768
+  IPP core 0 completed: 11.7689s total internal calculation time, 15345 FFTs
+  TaskDispatcher completed, time delta 11.8422s.
+
+  65536
+  IPP core 0 completed: 14.8283s total internal calculation time, 7665 FFTs
+  TaskDispatcher completed, time delta 14.8339s.
+
+  131072
+  IPP core 0 completed: 19.7661s total internal calculation time, 3825 FFTs
+  TaskDispatcher completed, time delta 19.7678s.
+
+  262144
+  IPP core 0 completed: 25.3114s total internal calculation time, 1905 FFTs
+  TaskDispatcher completed, time delta 25.3135s.
+
+Tablet
+
+  4096
+  IPP core 0 completed: 9.47793s total internal calculation time, 122880 FFTs
+  TaskDispatcher completed, time delta 10.0187s.
+
+  8192
+  IPP core 0 completed: 10.5779s total internal calculation time, 61425 FFTs
+  TaskDispatcher completed, time delta 11.1224s.
+
+  16384
+  IPP core 0 completed: 11.5062s total internal calculation time, 30705 FFTs
+  TaskDispatcher completed, time delta 12.0189s.
+
+  32768
+  IPP core 0 completed: 12.2713s total internal calculation time, 15345 FFTs
+  TaskDispatcher completed, time delta 12.7658s.
+  
+  65536
+  IPP core 0 completed: 14.8195s total internal calculation time, 7665 FFTs
+  TaskDispatcher completed, time delta 15.2615s.
+
+  131072
+  IPP core 0 completed: 20.6471s total internal calculation time, 3825 FFTs
+  TaskDispatcher completed, time delta 21.0867s.
+
+  262144
+  IPP core 0 completed: 27.3509s total internal calculation time, 1905 FFTs
+  TaskDispatcher completed, time delta 27.7793s.
+  
+
+
+#### CVS code tag for performance stats below: 'perf_tag4' -- make test_fftpts, 4 cores ####
+
+Abidal and using all 4 cores
+
+  4096
+  IPP core 0 completed: 1.47205s total internal calculation time, 24576 FFTs
+  IPP core 1 completed: 1.56146s total internal calculation time, 24576 FFTs
+  IPP core 2 completed: 1.55617s total internal calculation time, 24576 FFTs
+  IPP core 3 completed: 1.47105s total internal calculation time, 24576 FFTs
+  TaskDispatcher completed, time delta 3.15643s.
+
+  8192
+  IPP core 0 completed: 2.00855s total internal calculation time, 15345 FFTs
+  IPP core 1 completed: 1.99513s total internal calculation time, 15345 FFTs
+  IPP core 2 completed: 1.99136s total internal calculation time, 15345 FFTs
+  IPP core 3 completed: 2.00047s total internal calculation time, 15345 FFTs
+  TaskDispatcher completed, time delta 2.26704s.
+
+  16384
+  IPP core 0 completed: 2.21884s total internal calculation time, 7161 FFTs
+  IPP core 1 completed: 2.17667s total internal calculation time, 7161 FFTs
+  IPP core 2 completed: 2.18418s total internal calculation time, 7161 FFTs
+  IPP core 3 completed: 2.21766s total internal calculation time, 7161 FFTs
+  TaskDispatcher completed, time delta 2.3777s.
+
+  32768
+  IPP core 0 completed: 2.28544s total internal calculation time, 3069 FFTs
+  IPP core 1 completed: 2.3719s total internal calculation time, 3069 FFTs
+  IPP core 2 completed: 2.29034s total internal calculation time, 3069 FFTs
+  IPP core 3 completed: 2.32543s total internal calculation time, 3069 FFTs
+  TaskDispatcher completed, time delta 2.44412s.
+
+  65536
+  IPP core 0 completed: 3.84532s total internal calculation time, 1905 FFTs
+  IPP core 1 completed: 3.86516s total internal calculation time, 1905 FFTs
+  IPP core 2 completed: 3.84444s total internal calculation time, 1905 FFTs
+  IPP core 3 completed: 3.87384s total internal calculation time, 1905 FFTs
+  TaskDispatcher completed, time delta 4.0867s.
+
+  131072
+  IPP core 0 completed: 5.21379s total internal calculation time, 889 FFTs
+  IPP core 1 completed: 5.01836s total internal calculation time, 889 FFTs
+  IPP core 2 completed: 5.12395s total internal calculation time, 889 FFTs
+  IPP core 3 completed: 5.15181s total internal calculation time, 889 FFTs
+  TaskDispatcher completed, time delta 5.32281s.
+
+  262144
+  IPP core 0 completed: 5.90491s total internal calculation time, 381 FFTs
+  IPP core 1 completed: 5.94791s total internal calculation time, 381 FFTs
+  IPP core 2 completed: 5.84135s total internal calculation time, 381 FFTs
+  IPP core 3 completed: 5.92238s total internal calculation time, 381 FFTs
+  TaskDispatcher completed, time delta 6.00634s.
+

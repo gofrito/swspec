@@ -1,0 +1,8 @@
+unset logscale; set logscale y
+set xlabel "FFT point"
+set ylabel "Power"
+plot "data.csv" using 1 title 'Power spectrum' with lines
+set term postscript
+set output "plot.ps"
+replot
+pause -1

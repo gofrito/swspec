@@ -1,0 +1,18 @@
+
+
+To compile the GUI code the first time:
+
+  $ sudo aptitude install pyqt4-dev-tools qt4-designer pyqt-tools 
+  $ ./compile_gui.sh
+
+To run the GUI:
+  $ ./run.sh
+or
+  $ python spectrometerGUI.py
+
+The swspectrometer program is assumed to be /usr/local/bin/swspectrometer
+
+The included 'sample.ini' is the default template INI file.
+
+To run swspectrometer with plotting you may need to install plplot packages
+including the plplot xwin driver.
