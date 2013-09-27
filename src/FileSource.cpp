@@ -40,8 +40,8 @@ int FileSource::open(std::string uri)
    this->_uri = std::string(uri);
    this->_format = std::string(cfg->sourceformat_str);
    cfg->sourceformat = Unknown;
-   if (Helpers::cicompare(cfg->sourceformat_str, "Mark5B") == Helpers::FullMatch) {
-      cfg->sourceformat = Mark5B;
+   if (Helpers::cicompare(cfg->sourceformat_str, "Mk5B") == Helpers::FullMatch) {
+      cfg->sourceformat = Mk5B;
       sourceformat_uses_frames = true;
       frame_header_length = 16;     // specified to be always 16B
       frame_payload_length = 10000; // specified to be always 10.000B
@@ -80,7 +80,7 @@ int FileSource::open(std::string uri)
               return -1;
           }
           cfg->sourceformat = VLBA;
-      } else if (Helpers::cicompare(cfg->sourceformat_str, "Mk5B") == Helpers::BeginningsMatch) {
+      } else if (Helpers::cicompare(cfg->sourceformat_str, "Mark5B") == Helpers::BeginningsMatch) {
           mk5fileoffset = 0;
           _mk5s = new_mark5_stream(
                 new_mark5_stream_file(_uri.c_str(), mk5fileoffset),
@@ -90,7 +90,7 @@ int FileSource::open(std::string uri)
               *log << "Mark5access ERROR: apparently did not like format " << _format << std::endl;
               return -1;
           }
-          cfg->sourceformat = Mk5B;
+          cfg->sourceformat = Mark5B;
       }
       /* Format has no headers at all */
       if (Helpers::cicompare(cfg->sourceformat_str, "Maxim") == Helpers::FullMatch) {
@@ -130,7 +130,7 @@ int FileSource::open(std::string uri)
 
    /* Skip the first part of data? */
    if (cfg->seconds_to_skip > 0) {
-       if (cfg->sourceformat == VLBA || cfg->sourceformat == MKIV || cfg->sourceformat == Mk5B ) {
+       if (cfg->sourceformat == VLBA || cfg->sourceformat == MKIV || cfg->sourceformat == Mark5B ) {
            this->reopen_mark5_stream(cfg->seconds_to_skip);
        } else {
            std::ifstream::pos_type smp_bytes, seek_pos, frames;
@@ -281,7 +281,7 @@ void FileSource::locateFirstHeader()
    if (!sourceformat_uses_frames) {
 
       /* Headerless in the sense of data-replacement headers */
-      if (cfg->sourceformat == VLBA || cfg->sourceformat == MKIV || cfg->sourceformat == Mk5B ) {
+      if (cfg->sourceformat == VLBA || cfg->sourceformat == MKIV || cfg->sourceformat == Mark5B ) {
            first_header_offset = 0;  // unused
            frame_payload_length = 0; // unused
 
@@ -290,7 +290,7 @@ void FileSource::locateFirstHeader()
            mark5_stream_get_sample_time(_mk5s, &mjd, &sec, &ns);
            if (ns > 0.0f) {
                *log << "First frame not at an integer second. "
-                    << "Re-opening first integer second and skipping additional " 
+                    << "Re-opening first integer second and skipping additional "
                     << cfg->seconds_to_skip << "s." << std::endl;
                int old_sec = sec;
                // doesn't work: mark5_stream_seek(_mk5s, mjd, sec + 1 + cfg->seconds_to_skip, 0.0f);
@@ -315,7 +315,7 @@ void FileSource::locateFirstHeader()
    } else {
 
       /* With headers */
-      if (cfg->sourceformat == Mark5B) {
+      if (cfg->sourceformat == Mk5B) {
           // we keep life simple and assume a smart recording tool
           // has been used, such that the first header always
           // begins at byte 0!
@@ -379,7 +379,7 @@ void FileSource::inspectAndConsumeHeader()
        return;
    }
 
-   if (cfg->sourceformat == Mark5B) {
+   if (cfg->sourceformat == Mk5B) {
       // http://www.atnf.csiro.au/vlbi/wiki/index.php?n=EXPReS.Mark5BFormat
       // Data on disk is divided into equal-length disk frames (DF). Each DF has
       // a header of 4 32-bit words (4*4=16 bytes) followed by 2500 32-bit words of data

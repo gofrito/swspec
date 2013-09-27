@@ -44,7 +44,7 @@ typedef struct _swscomplex_t {
 
 enum WindowFunctionType { None, Cosine, Cosine2, Hamming, Hann, Blackman };
 enum OutputFormat { Ascii, Binary };
-enum InputFormat  { Unknown=-1, RawSigned, RawUnsigned, Mark5B, iBOB, VDIF, VLBA, MKIV, Mk5B, Maxim };
+enum InputFormat  { Unknown=-1, RawSigned, RawUnsigned, Mk5B, iBOB, VDIF, VLBA, MKIV, Mark5B, Maxim };
 
 class DataSink;
 class DataSource;

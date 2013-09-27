@@ -77,15 +77,15 @@ public:
                 return new MarkIVUnpacker(cfg);
             }
         }
-        if (cfg->sourceformat == Mk5B) {
-            if (Mk5BUnpacker::canHandleConfig(cfg)) {
-                return new Mk5BUnpacker(cfg);
-            }
-        }
-        /* Data from datasources with headers pre-removed */
         if (cfg->sourceformat == Mark5B) {
             if (Mark5BUnpacker::canHandleConfig(cfg)) {
                 return new Mark5BUnpacker(cfg);
+            }
+        }
+        /* Data from datasources with headers pre-removed */
+        if (cfg->sourceformat == Mk5B) {
+            if (Mk5BUnpacker::canHandleConfig(cfg)) {
+                return new Mk5BUnpacker(cfg);
             }
         }
         if (cfg->sourceformat == iBOB) {

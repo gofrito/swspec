@@ -61,9 +61,9 @@ class TwoBitSinglechannelUnpacker : public DataUnpacker {
     swspect_settings_t const* cfg;
 };
 
-class Mark5BUnpacker : public DataUnpacker {
+class Mk5BUnpacker : public DataUnpacker {
   public:
-    Mark5BUnpacker(swspect_settings_t const* settings) { cfg = settings; }
+    Mk5BUnpacker(swspect_settings_t const* settings) { cfg = settings; }
     size_t extract_samples(char const* const, Ipp32f*, const size_t, const int) const;
     static bool canHandleConfig(swspect_settings_t const* settings);
   protected:
@@ -93,9 +93,9 @@ class MarkIVUnpacker : public DataUnpacker {
     Ipp32f** allchannels;
 };
 
-class Mk5BUnpacker : public DataUnpacker {
+class Mark5BUnpacker : public DataUnpacker {
   public:
-    Mk5BUnpacker(swspect_settings_t const*);
+    Mark5BUnpacker(swspect_settings_t const*);
     size_t extract_samples(char const* const, Ipp32f*, const size_t, const int) const;
     static bool canHandleConfig(swspect_settings_t const* settings);
   protected:

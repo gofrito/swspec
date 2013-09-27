@@ -319,7 +319,7 @@ bool TwoBitSinglechannelUnpacker::canHandleConfig(swspect_settings_t const* sett
  * @param channel the channel to use, 0..nchannels-1
  * @return how many samples were unpacked
  */
-size_t Mark5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const size_t count, const int channel) const
+size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const size_t count, const int channel) const
 {
     static Ipp32f precooked_LUT[256];
     static int    precook_done = 0;
@@ -471,10 +471,9 @@ size_t Mark5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const
     return rc;
 }
 
-bool Mark5BUnpacker::canHandleConfig(swspect_settings_t const* settings)
+bool Mk5BUnpacker::canHandleConfig(swspect_settings_t const* settings)
 {
-//    return ((settings->bits_per_sample == 2) && ((settings->source_channels % 2) == 0));
-    return (((settings->source_channels % 2) == 0));
+    return ((settings->bits_per_sample == 2 || settings->bits_per_sample == 1) && ((settings->source_channels % 2) == 0));
 }
 
 
@@ -691,7 +690,7 @@ bool MarkIVUnpacker::canHandleConfig(swspect_settings_t const* settings)
  * Mark5B raw data to float unpacker. Mk5B mode uses the mark5access library
  * Initialize things required by the mark5access library.
  */
-Mk5BUnpacker::Mk5BUnpacker(swspect_settings_t const* settings)
+Mark5BUnpacker::Mark5BUnpacker(swspect_settings_t const* settings)
 {
     /* Preps */
     cfg = settings;
@@ -734,7 +733,7 @@ Mk5BUnpacker::Mk5BUnpacker(swspect_settings_t const* settings)
  * @param channel the channel to use, 0..nchannels-1
  * @return how many samples were unpacked
  */
-size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const size_t count, const int channel) const
+size_t Mark5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const size_t count, const int channel) const
 {
     const size_t payloadbytes = (ms->payloadoffset>0) ? (ms->framebytes - ms->payloadoffset) : ms->framebytes;
 
@@ -776,7 +775,7 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
     return count;
 }
 
-bool Mk5BUnpacker::canHandleConfig(swspect_settings_t const* settings)
+bool Mark5BUnpacker::canHandleConfig(swspect_settings_t const* settings)
 {
     return ((settings->bits_per_sample == 2 || settings->bits_per_sample == 1) && ((settings->source_channels % 2) == 0));
 }
