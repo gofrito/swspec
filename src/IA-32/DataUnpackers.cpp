@@ -381,7 +381,6 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
     }
     }
 
-
     else if (cfg->source_channels == 16) {
     if (!precook_done) {
         unsigned int shift = 2 * (channel%16); // 0,2,4,6,8,10,12,14
