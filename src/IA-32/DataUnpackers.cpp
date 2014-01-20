@@ -1,3 +1,4 @@
+
 /************************************************************************
  * IBM Cell / Intel Software Spectrometer
  * Copyright (C) 2008 Jan Wagner
@@ -332,7 +333,7 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
         unsigned char shift = (channel%4); // 0,2,4,6
         unsigned char mask1  = (unsigned char)1 << shift;
         unsigned char mask2  = (unsigned char)1 << (shift+4);
-//        cerr << "shift: " << hex(shift1) << " : " << hex(shift2) << " mask : " << hex(mask1) << " : " << hex(mask2) << "\n" << endl;
+        // cerr << "shift: " << hex(shift1) << " : " << hex(shift2) << " mask : " << hex(mask1) << " : " << hex(mask2) << "\n" << endl;
         const float map_rev[2] = { +1.0, -1.0}; // {s} : 0, 1 : reversed sign/mag bits
         for (int i=0; i<256; 2*i++) {
             unsigned char s = (i & mask1) >> shift;
@@ -381,7 +382,7 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
     }
     }
 
-    else if (cfg->source_channels == 16) {
+    if (cfg->source_channels == 16) {
     if (!precook_done) {
         unsigned int shift = 2 * (channel%16); // 0,2,4,6,8,10,12,14
         unsigned int mask  = (unsigned int)3 << shift;
@@ -409,6 +410,32 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
     }
     }
 
+    if (cfg->source_channels == 8) {
+    if (!precook_done) {
+        unsigned short shift = 2 * (channel%4); // 0,2,4,6
+        unsigned short mask  = (unsigned short)3 << shift;
+        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 }; // {m,s} : 00,01,10,11 : reversed sign/mag bits
+        for (int i=0; i<256; i++) {
+            unsigned char s = (i & mask) >> shift;
+            precooked_LUT[i] = map_rev[s];
+        }
+        precook_done = 1;
+    }
+
+    /* unpack using the lookup table */
+    unsigned char const* src8 = (unsigned char const*)src + channel/4; // byte offset
+    int step = cfg->source_channels / 4; // 1 or 2
+    for (smp=0; smp<count; ) {
+        const int unroll_factor = 8;
+        for (char off=0; off<unroll_factor; off++) {
+            dst[smp+off] = precooked_LUT[*(src8+off*step)];
+       //     dst[smp+off+1] = precooked_LUT[*(src8*off*step+1)];
+        }
+        src8 += unroll_factor*step;
+        smp  += unroll_factor;
+    }
+    }
+
     else if (cfg->source_channels == 2) {
     if (!precook_done) {
         unsigned char shift = 2 * (channel%2); // 0,2
@@ -433,32 +460,6 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
             dst[smp+off] = precooked_LUT[*(src16+off*step)];
         }
         src16 += unroll_factor*step;
-        smp  += unroll_factor;
-    }
-    }
-
-    else if (cfg->source_channels == 8) {
-    if (!precook_done) {
-        unsigned short shift = 2 * (channel%8); // 0,2,4,6,8,10,12,14
-        unsigned short mask  = (unsigned short)3 << shift;
-        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 }; // {m,s} : 00,01,10,11 : reversed sign/mag bits
-        for (int i=0; i<256; i++) {
-            unsigned char s = (i & mask) >> shift;
-            precooked_LUT[i] = map_rev[s];
-        }
-        precook_done = 1;
-    }
-
-    /* unpack using the lookup table */
-    unsigned char const* src8 = (unsigned char const*)src + channel/8; // byte offset
-    int step = cfg->source_channels / 8; // 1 or 2
-    for (smp=0; smp<count; ) {
-        const int unroll_factor = 8;
-        for (char off=0; off<unroll_factor; off++) {
-            dst[smp+off] = precooked_LUT[*(src8+off*step)];
-       //     dst[smp+off+1] = precooked_LUT[*(src8*off*step+1)];
-        }
-        src8 += unroll_factor*step;
         smp  += unroll_factor;
     }
     }
@@ -664,7 +665,7 @@ size_t MarkIVUnpacker::extract_samples(char const* const src, Ipp32f* dst, const
     while (dst[headeroffset]!=0) { headeroffset++; }
     while ((headersamples < count) && dst[headersamples+headeroffset] == 0) { headersamples++; }
     const size_t fanoutedframesamples = 20000 * (headersamples/160);
-    //cerr << " headersamples = " << headersamples << ", payloadbytes=" << payloadbytes << ", headeroffset=" << headeroffset << ", fanoutedframesamples=" << fanoutedframesamples << endl;
+    cerr << " headersamples = " << headersamples << ", payloadbytes=" << payloadbytes << ", headeroffset=" << headeroffset << ", fanoutedframesamples=" << fanoutedframesamples << endl;
     for (size_t n=headeroffset; n < count; n++) {
         if (((n-headeroffset) % fanoutedframesamples) < headersamples) {
             dst[n] = 3.3359f * float(2*(std::rand()%2) - 1);
