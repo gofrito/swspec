@@ -412,9 +412,9 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
 
     if (cfg->source_channels == 8) {
     if (!precook_done) {
-        unsigned short shift = 2 * (channel%4); // 0,2,4,6
+        unsigned short shift = 2 * (channel%4);
         unsigned short mask  = (unsigned short)3 << shift;
-        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 }; // {m,s} : 00,01,10,11 : reversed sign/mag bits
+        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 };
         for (int i=0; i<256; i++) {
             unsigned char s = (i & mask) >> shift;
             precooked_LUT[i] = map_rev[s];
@@ -423,13 +423,12 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
     }
 
     /* unpack using the lookup table */
-    unsigned char const* src8 = (unsigned char const*)src + channel/4; // byte offset
-    int step = cfg->source_channels / 4; // 1 or 2
+    unsigned char const* src8 = (unsigned char const*)src + channel/4;
+    int step = cfg->source_channels / 4;
     for (smp=0; smp<count; ) {
         const int unroll_factor = 8;
         for (char off=0; off<unroll_factor; off++) {
             dst[smp+off] = precooked_LUT[*(src8+off*step)];
-       //     dst[smp+off+1] = precooked_LUT[*(src8*off*step+1)];
         }
         src8 += unroll_factor*step;
         smp  += unroll_factor;
@@ -638,7 +637,7 @@ size_t MarkIVUnpacker::extract_samples(char const* const src, Ipp32f* dst, const
         if (0 != (to_unpack % ms->samplegranularity)) {
             cerr << "to_unpack=" << to_unpack << " is not a multiple of sample granularity!" << endl;
         }
-        size_t got = mark5_unpack(ms, (void*)mk5src, allchannels, to_unpack);
+        //size_t got = mark5_unpack(ms, (void*)mk5src, allchannels, to_unpack);
         /* Write dump from raw unpack result */
         #ifdef WRITE_DUMP
         // fout.write((char*)(allchannels[channel % ms->nchan]), std::streamsize(to_unpack * sizeof(Ipp32f)));
