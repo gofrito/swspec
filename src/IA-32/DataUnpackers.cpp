@@ -1,4 +1,3 @@
-
 /************************************************************************
  * IBM Cell / Intel Software Spectrometer
  * Copyright (C) 2008 Jan Wagner
@@ -327,37 +326,36 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
     size_t rc;
     size_t smp;
 
-    /* build lookup */
-    if ((cfg->source_channels == 4) && (cfg->bits_per_sample == 1)){
+    if (cfg->source_channels == 2) {
      if (!precook_done) {
-        unsigned char shift = (channel%4); // 0,2,4,6
-        unsigned char mask1  = (unsigned char)1 << shift;
-        unsigned char mask2  = (unsigned char)1 << (shift+4);
-        // cerr << "shift: " << hex(shift1) << " : " << hex(shift2) << " mask : " << hex(mask1) << " : " << hex(mask2) << "\n" << endl;
-        const float map_rev[2] = { +1.0, -1.0}; // {s} : 0, 1 : reversed sign/mag bits
-        for (int i=0; i<256; 2*i++) {
-            unsigned char s = (i & mask1) >> shift;
-            precooked_LUT[i] = map_rev[s];
-            unsigned char s2 = (i & mask2) >> (shift+4);
-            precooked_LUT[i+1] = map_rev[s2];
+        unsigned char shift = 2 * (channel%2); // 0,2
+	    unsigned char shift2 =  2 * ((channel+2)%2);
+        unsigned char mask  = (unsigned char)3 << shift;
+        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 }; // {m,s} : 00,01,10,11 : reversed sign/mag bits
+        for (int i=0; i<128; i++) {
+            unsigned char s1 = (i & mask) >> shift;
+            unsigned char s2 = (i & mask) >> shift2;
+            precooked_LUT[2*i]   = map_rev[s1];
+	    precooked_LUT[2*i+1] = map_rev[s2];
         }
         precook_done = 1;
-    }
+     }
 
-    /* unpack using the lookup table */
-    unsigned char const* src8 = (unsigned char const*)src + channel/4; // byte offset
-    int step = cfg->source_channels / 4; // 1 or 2
-    for (smp=0; smp<count; ) {
+     /* unpack using the lookup table */
+     unsigned short const* src16 = (unsigned short const*)src + channel/8; // byte offset
+     int step = cfg->source_channels / 8; // 1 or 2
+     for (smp=0; smp<count; ) {
         const int unroll_factor = 8;
-        for (char off=0; off<unroll_factor; off++) {
-            dst[smp+off] = precooked_LUT[*(src8+off*step)];
+        for (short off=0; off<unroll_factor; off++) {
+            dst[smp+off] = precooked_LUT[*(src16+off*step)];
         }
-        src8 += unroll_factor*step;
+        src16 += unroll_factor*step;
         smp  += unroll_factor;
-    }
+     }
     }
 
-    if ((cfg->source_channels == 4) && (cfg->bits_per_sample == 2)){
+    /* build lookup */
+    if (cfg->source_channels == 4) {
      if (!precook_done) {
         unsigned char shift = 2 * (channel%4); // 0,2,4,6
         unsigned char mask  = (unsigned char)3 << shift;
@@ -367,23 +365,49 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
             precooked_LUT[i] = map_rev[s];
         }
         precook_done = 1;
+     }
+
+     /* unpack using the lookup table */
+     unsigned char const* src8 = (unsigned char const*)src + channel/4; // byte offset
+     int step = cfg->source_channels / 4; // 1 or 2
+     for (smp=0; smp<count; ) {
+         const int unroll_factor = 8;
+         for (char off=0; off<unroll_factor; off++) {
+            dst[smp+off] = precooked_LUT[*(src8+off*step)];
+        }
+        src8 += unroll_factor*step;
+        smp  += unroll_factor;
+     }
     }
 
-    /* unpack using the lookup table */
-    unsigned char const* src8 = (unsigned char const*)src + channel/4; // byte offset
-    int step = cfg->source_channels / 4; // 1 or 2
-    for (smp=0; smp<count; ) {
+
+    if (cfg->source_channels == 8) {
+     if (!precook_done) {
+        unsigned short shift = 2 * (channel%4);
+        unsigned short mask  = (unsigned short)3 << shift;
+        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 };
+        for (int i=0; i<256; i++) {
+            unsigned char s = (i & mask) >> shift;
+            precooked_LUT[i] = map_rev[s];
+        }
+        precook_done = 1;
+     }
+
+     /* unpack using the lookup table */
+     unsigned char const* src8 = (unsigned char const*)src + channel/4;
+     int step = cfg->source_channels / 4;
+     for (smp=0; smp<count; ) {
         const int unroll_factor = 8;
         for (char off=0; off<unroll_factor; off++) {
             dst[smp+off] = precooked_LUT[*(src8+off*step)];
         }
         src8 += unroll_factor*step;
         smp  += unroll_factor;
-    }
+     }
     }
 
-    if (cfg->source_channels == 16) {
-    if (!precook_done) {
+    else if (cfg->source_channels == 16) {
+     if (!precook_done) {
         unsigned int shift = 2 * (channel%16); // 0,2,4,6,8,10,12,14
         unsigned int mask  = (unsigned int)3 << shift;
         const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 }; // {m,s} : 00,01,10,11 : reversed sign/mag bits
@@ -394,11 +418,11 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
         precook_done = 1;
     }
 
-    /* unpack using the lookup table */
-    unsigned short const* src32 = (unsigned short const*)src + channel/16; // byte offset
-    int step = cfg->source_channels / 16; // 1 or 2
-    cerr << step << endl;
-    for (smp=0; smp<count; ) {
+     /* unpack using the lookup table */
+     unsigned short const* src32 = (unsigned short const*)src + channel/16; // byte offset
+     int step = cfg->source_channels / 16; // 1 or 2
+     cerr << step << endl;
+     for (smp=0; smp<count; ) {
         const int unroll_factor = 32;
         for (int off=0; off<unroll_factor; off++) {
             cerr << src32+step*off << endl;
@@ -407,60 +431,7 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
         }
         src32 += unroll_factor*step;
         smp   += unroll_factor;
-    }
-    }
-
-    if (cfg->source_channels == 8) {
-    if (!precook_done) {
-        unsigned short shift = 2 * (channel%4);
-        unsigned short mask  = (unsigned short)3 << shift;
-        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 };
-        for (int i=0; i<256; i++) {
-            unsigned char s = (i & mask) >> shift;
-            precooked_LUT[i] = map_rev[s];
-        }
-        precook_done = 1;
-    }
-
-    /* unpack using the lookup table */
-    unsigned char const* src8 = (unsigned char const*)src + channel/4;
-    int step = cfg->source_channels / 4;
-    for (smp=0; smp<count; ) {
-        const int unroll_factor = 8;
-        for (char off=0; off<unroll_factor; off++) {
-            dst[smp+off] = precooked_LUT[*(src8+off*step)];
-        }
-        src8 += unroll_factor*step;
-        smp  += unroll_factor;
-    }
-    }
-
-    else if (cfg->source_channels == 2) {
-    if (!precook_done) {
-        unsigned char shift = 2 * (channel%2); // 0,2
-	unsigned char shift2 =  2 * ((channel+2)%2);
-        unsigned char mask  = (unsigned char)3 << shift;
-        const float map_rev[4] = { +1.0, -1.0, +3.3359, -3.3359 }; // {m,s} : 00,01,10,11 : reversed sign/mag bits
-        for (int i=0; i<128; i++) {
-            unsigned char s1 = (i & mask) >> shift;
-            unsigned char s2 = (i & mask) >> shift2;
-            precooked_LUT[2*i]   = map_rev[s1];
-	    precooked_LUT[2*i+1] = map_rev[s2];
-        }
-        precook_done = 1;
-    }
-
-    /* unpack using the lookup table */
-    unsigned short const* src16 = (unsigned short const*)src + channel/8; // byte offset
-    int step = cfg->source_channels / 8; // 1 or 2
-    for (smp=0; smp<count; ) {
-        const int unroll_factor = 8;
-        for (short off=0; off<unroll_factor; off++) {
-            dst[smp+off] = precooked_LUT[*(src16+off*step)];
-        }
-        src16 += unroll_factor*step;
-        smp  += unroll_factor;
-    }
+     }
     }
 
     rc = smp;
@@ -472,7 +443,7 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
 
 bool Mk5BUnpacker::canHandleConfig(swspect_settings_t const* settings)
 {
-    return ((settings->bits_per_sample == 2 || settings->bits_per_sample == 1) && ((settings->source_channels % 2) == 0));
+    return ((settings->bits_per_sample == 2) && (settings->source_channels % 2) == 0));
 }
 
 
@@ -637,7 +608,8 @@ size_t MarkIVUnpacker::extract_samples(char const* const src, Ipp32f* dst, const
         if (0 != (to_unpack % ms->samplegranularity)) {
             cerr << "to_unpack=" << to_unpack << " is not a multiple of sample granularity!" << endl;
         }
-        //size_t got = mark5_unpack(ms, (void*)mk5src, allchannels, to_unpack);
+        /* the follow line was commented out, GMC 04.02.2014        
+        size_t got = mark5_unpack(ms, (void*)mk5src, allchannels, to_unpack);
         /* Write dump from raw unpack result */
         #ifdef WRITE_DUMP
         // fout.write((char*)(allchannels[channel % ms->nchan]), std::streamsize(to_unpack * sizeof(Ipp32f)));
