@@ -443,7 +443,7 @@ size_t Mk5BUnpacker::extract_samples(char const* const src, Ipp32f* dst, const s
 
 bool Mk5BUnpacker::canHandleConfig(swspect_settings_t const* settings)
 {
-    return ((settings->bits_per_sample == 2) && (settings->source_channels % 2) == 0));
+    return ((settings->bits_per_sample == 2) && (settings->source_channels % 2) == 0);
 }
 
 
