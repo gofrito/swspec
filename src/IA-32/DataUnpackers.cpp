@@ -608,7 +608,7 @@ size_t MarkIVUnpacker::extract_samples(char const* const src, Ipp32f* dst, const
         if (0 != (to_unpack % ms->samplegranularity)) {
             cerr << "to_unpack=" << to_unpack << " is not a multiple of sample granularity!" << endl;
         }
-        /* the follow line was commented out, GMC 04.02.2014        
+        // the follow line was commented out, GMC 04.02.2014
         size_t got = mark5_unpack(ms, (void*)mk5src, allchannels, to_unpack);
         /* Write dump from raw unpack result */
         #ifdef WRITE_DUMP
@@ -636,7 +636,7 @@ size_t MarkIVUnpacker::extract_samples(char const* const src, Ipp32f* dst, const
     while (dst[headeroffset]!=0) { headeroffset++; }
     while ((headersamples < count) && dst[headersamples+headeroffset] == 0) { headersamples++; }
     const size_t fanoutedframesamples = 20000 * (headersamples/160);
-    cerr << " headersamples = " << headersamples << ", payloadbytes=" << payloadbytes << ", headeroffset=" << headeroffset << ", fanoutedframesamples=" << fanoutedframesamples << endl;
+    // cerr << " headersamples = " << headersamples << ", payloadbytes=" << payloadbytes << ", headeroffset=" << headeroffset << ", fanoutedframesamples=" << fanoutedframesamples << endl;
     for (size_t n=headeroffset; n < count; n++) {
         if (((n-headeroffset) % fanoutedframesamples) < headersamples) {
             dst[n] = 3.3359f * float(2*(std::rand()%2) - 1);
