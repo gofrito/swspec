@@ -1,1 +1,3 @@
-Branch has been moved to bitbucket - https://bitbucket.org/gofrito/swspec/src/master/
+# Branch has been moved to GitLab 
+
+https://gitlab.com/gofrito/swspec
